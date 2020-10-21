@@ -1,0 +1,48 @@
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+public class Node {
+         int id;
+         String name;
+         Map<Node,Integer> relations=new HashMap();
+         LinkedList<Node> path=new LinkedList<>();
+         int distance=Integer.MAX_VALUE;
+      
+        public void setDistance(int dist){
+            this.distance=dist;
+        }
+        public int getDistance(){
+            return this.distance;
+        }
+        public LinkedList<Node> getPath(){
+             return this.path;
+        }
+        
+        public void setPath(LinkedList<Node> newPath){
+             this.path=newPath;
+        }
+        public Node(){
+            
+        }
+        public Node(int id,String name) {
+            this.id=id;
+            this.name=name;
+        }
+        public int getId(){
+            return id;
+        }
+        public String getName(){
+            return name;
+        }
+        public void addRelation(Node dest,int distance){
+            relations.put(dest, distance);
+        }
+        public boolean isRelationExist(Node destNode){
+            return relations.containsKey(destNode)||destNode.relations.containsKey(this);
+        }
+        public Map<Node,Integer> getRelations(){
+            return relations;
+        }
+}
