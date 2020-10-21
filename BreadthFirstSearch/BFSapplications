@@ -1,0 +1,227 @@
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Scanner;
+import java.util.Set;
+
+/**
+ *
+ * @author mustafa
+ */
+public class BfsAlgorithm {
+ static Scanner sc;
+    static int nodesCount;
+    static List<Node> nodes;
+    static int shortestDistance=0;
+    static List<Node> connectedNodes;
+
+    
+    public static void main(String[] args) {
+      nodes=new ArrayList<>();
+      connectedNodes=new ArrayList<>();
+      sc=new Scanner(System.in);
+      //getting num of nodes in our graph
+      System.out.println("Enter number of nodes :");
+      nodesCount=sc.nextInt();
+      sc.nextLine();
+      String tempName;
+      int distance;
+
+      Node sourceNode,destNode;
+      String nodeName;
+      sc=new Scanner(System.in);
+      //getting all nodes's names
+      for(int n=0;n<nodesCount;n++){
+        System.out.println("Enter name of node :"+n);
+        nodes.add(new Node(n,sc.nextLine()));
+      }
+      System.out.println("Now to the relations:\nif there is a path,then write the"
+              + " 1\nIf not then write 0 ");
+        //setting relations and distance beween diffrent nodes
+        for(int i=0;i<nodesCount;i++){
+            System.out.println("it's run number : " +i+ " of : "+nodesCount);
+            sourceNode=nodes.get(i);
+            System.out.println("Does Node "+sourceNode.getName()+" has a path to :");
+            for(int k=0;k<nodesCount;k++){
+                destNode=nodes.get(k);
+                nodeName=destNode.getName();
+                if(destNode.getId()==sourceNode.getId()){
+                    //don nothing 
+                }
+                else if(sourceNode.isRelationExist(destNode)){
+                    System.out.println("relation from node "+sourceNode.getName()+" to "+nodeName+" already exist ");
+                    sourceNode.addRelation(destNode, 1);
+                }
+                /*
+                i>k mean that its a previous node with index i that  we already ignored creating a relation from 
+                node with index k,e.g:
+                node a with index 0 and node c with index 2 ,when setting a's relations we ignored c,
+                so when its time to set c relations we dont ask for node a cause its aleady asked for
+                */
+                else if (i>k){
+                    //do nothing
+                }
+                else{
+                    System.out.println(nodeName+" ? ");
+                    int isTherePath = sc.nextInt();
+                    sc.nextLine();
+                    if(isTherePath==0){
+                        //just do nothing 
+                    }
+                    else if(isTherePath==1){
+                        nodes.get(i).addRelation(destNode, isTherePath);
+                    }
+                }
+            }
+        }
+//        Now user can check the shortest path from a node to another node
+        int loop=1;
+        System.out.println("\nMenu\n1-Traverse with Bfs \t\t2-Find Shortest Path \t\t 3-stop");
+        int select=sc.nextInt();
+        sc.nextLine();
+
+        while(loop==1){
+            switch(select){
+                case 1:{
+                    List<Node> unVisited=new ArrayList<>();
+                    List<Node> visited=new ArrayList<>();
+                    String from="";
+                    sourceNode=null;
+
+                    System.out.println("From :");
+                    from=sc.nextLine();
+                    for(Node node:nodes){
+                        if(node.getName().equalsIgnoreCase(from)){
+                            sourceNode=node;
+                        }
+                    }
+                    traverse(sourceNode,visited,unVisited);
+                    System.out.println("\nMenu\n1-Traverse with Bfs \t\t2-Find Shortest Path \t\t 3-stop");
+                    select=sc.nextInt();
+                    sc.nextLine();
+                   break;
+                }
+                case 2:{
+                   findPath();
+                   System.out.println("\nMenu\n1-Traverse with Bfs \t\t2-Find Shortest Path between 2 nodes \t\t 3-stop");
+                    select=sc.nextInt();
+                    sc.nextLine();
+                   break;
+                }
+                case 3:{
+                   System.exit(0);
+                   break;
+                }
+                default:{
+                    System.out.println("Are you stupid or something?select 1 or 2");
+                }
+            }
+        }
+        
+    }
+    private static void findPath() {
+       
+        String from="";
+        String to="";
+        Node sourceNode=null,destNode=null;
+        
+        System.out.println("From :");
+        from=sc.nextLine();
+        for(Node node:nodes){
+            if(node.getName().equalsIgnoreCase(from)){
+                sourceNode=node;
+            }
+        }
+        
+        System.out.println("To :");
+        to=sc.nextLine().toUpperCase();
+        for(Node node:nodes){
+            if(node.getName().equalsIgnoreCase(to)){
+                destNode=node;
+            }
+        }
+        //if the source is also the destination node
+        if(from.equalsIgnoreCase(to)){
+            System.out.println("Of course its 0 ");
+        }
+        //check wether or not the source node has relations with other nodes
+        else if(sourceNode.getRelations().isEmpty()){
+            System.out.println("The source node dont have paths to other nodes");
+        }
+        //check wether or not the destination node has relations with other nodes
+        else if(destNode.getRelations().isEmpty()){
+            System.out.println("The destination node can't be reach from any node");
+        }
+        
+        //now to check manually
+        else{
+             List<Node> unVisited=new ArrayList<>();
+             List<Node> visited=new ArrayList<>();
+             List<Node> path =new ArrayList<>();
+             unVisited.add(sourceNode);
+             sourceNode.path.add(sourceNode);
+             getMyPath(sourceNode,visited,unVisited);
+             /*
+                after getMyPath method has completed ,now every node has its property path contain the path to it
+            */
+             for(Node node:destNode.getPath()){
+                 System.out.print(node.getName()+"  ");
+             }
+             //we have to set the path to null for every node in case previous search is made
+             for(Node node:nodes){
+                 node.setPath(new LinkedList<>());
+             }
+             
+        }
+        
+    }
+    
+    private static void traverse(Node sourceNode, List<Node> visited, List<Node> unVisited) {
+        if(visited.contains(sourceNode)){
+            return;
+        }
+        visited.add(sourceNode);
+        System.out.println(" marking  "+ sourceNode.getName()+" as visited");
+        unVisited.remove(sourceNode);
+        System.out.print(sourceNode.getName()+"  ");
+        
+        for(Entry<Node,Integer> entryNode:sourceNode.getRelations().entrySet()){
+            if(!unVisited.contains(entryNode.getKey())&&!visited.contains(entryNode.getKey())){
+                System.out.println(" adding "+ entryNode.getKey().getName());
+                unVisited.add(entryNode.getKey());
+            }
+        }
+        
+        if(!unVisited.isEmpty()){
+            System.out.println(" exploring "+ unVisited.get(0).getName());
+            traverse(unVisited.get(0),visited,unVisited);
+        }
+    }
+
+    private static void getMyPath(Node sourceNode,  List<Node> visited, List<Node> unVisited) {
+        
+        
+        if(visited.contains(sourceNode)){
+            return;
+        }
+        visited.add(sourceNode);
+        unVisited.remove(sourceNode);
+        for(Entry<Node,Integer> entryNode:sourceNode.getRelations().entrySet()){
+            if(!unVisited.contains(entryNode.getKey())&&!visited.contains(entryNode.getKey())){
+                unVisited.add(entryNode.getKey());
+                for(Node node:sourceNode.getPath()){
+                    entryNode.getKey().path.add(node);
+                }
+                entryNode.getKey().path.add(entryNode.getKey());
+            }
+        }
+        
+        if(!unVisited.isEmpty()){
+            getMyPath(unVisited.get(0),visited,unVisited);
+        }
+        
+    }
+
+}
